@@ -21,11 +21,14 @@ Every token is classified as one of:
   attaches with NO space to whatever follows it -- the mirror image of
   Latin's enclitic, since each of these is a *prefix* rather than a
   suffix. The article is detected by its own 'article' relation
-  (relationship1/2); a preposition has no relation of its own to check
-  (see models.py's RelationLabel comment -- "functions of prepositions" is
-  still TBA in syntax_model.md), so it's detected indirectly, from
+  (relationship1/2); a preposition is detected indirectly instead, from
   whichever OTHER token relates to it via 'object of preposition' (see
-  `_preposition_ids()` below).
+  `_preposition_ids()` below) -- even though a preposition heading an
+  adverbial phrase now also carries its own outgoing 'adverbial' relation
+  (see models.py's RelationLabel comment), that relation is optional (not
+  every preposition in a passage modifies a verb adverbially), where
+  'object of preposition' is the reliable, universal signal, so spacing
+  detection keeps using the latter.
 - **left-joining** (an enclitic pronoun, or a cantillation mark): attaches
   directly to whatever precedes it, no space, ever -- these are both
   suffix-like in orthography (an enclitic pronoun suffixed to its host
@@ -85,10 +88,13 @@ _GLUED_TOKENTYPES = {"enclitic pronoun", "proclitic conjunction", "maqaf", "cant
 def _preposition_ids(tokengraph: List[TokenAnalysis]) -> set:
     """Token ids that some OTHER token relates to via 'object of
     preposition' -- i.e., the ids of the preposition tokens themselves.
-    Needed because a preposition has no outgoing relation of its own to
-    check directly (its own outward function -- how it relates to the verb
-    or noun it modifies -- is still "TBA" in syntax_model.md; see models.py's
-    RelationLabel comment), unlike the article, which carries its own
+    Needed because a preposition's own outgoing relation (relationship1=
+    'adverbial', when the phrase it heads modifies a verb -- see models.py's
+    RelationLabel comment) is optional, not universal: not every
+    preposition in a passage functions adverbially, and syntax_model.md
+    doesn't document any other outward function for one yet. So detecting
+    ANY preposition (for spacing purposes) still goes through the reliable,
+    universal signal instead, unlike the article, which carries its own
     'article' relation and so is detected directly in `_classify()`."""
     ids = set()
     for tok in tokengraph:

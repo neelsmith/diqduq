@@ -28,7 +28,7 @@ Working on `diqduq` itself (this repo checked out locally) rather than depending
 - [DEVELOPMENT.md](DEVELOPMENT.md) -- how the above fit together into one development loop
 - [API documentation](docs/diqduq-api-docs.html)
 
-See the [project issue tracker](https://github.com/neelsmith/diqduq/issues) for known gaps and work in progress -- in particular, `syntax_model.md` itself notes several constructions ("TBA": the functions of prepositions beyond "object of preposition", subordinating conjunctions, and the relative pronoun אֲשֶׁר) that the scheme doesn't cover yet.
+See the [project issue tracker](https://github.com/neelsmith/diqduq/issues) for known gaps and work in progress -- in particular, `syntax_model.md` itself notes two remaining constructions ("TBA": subordinating conjunctions and the relative pronoun אֲשֶׁר) that the scheme doesn't cover yet.
 
 
 ## Background

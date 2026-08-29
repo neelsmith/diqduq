@@ -53,8 +53,21 @@ def test_tokengraph_to_html_wraps_lexical_and_conjunction_but_not_others():
     example, tokengraph = _tokengraph_for("genesis_1_1")
     html_out = tokengraph_to_html(tokengraph)
     assert "<span" in html_out
-    # The direct-object marker אֵת carries no relation and is never wrapped.
     assert html_out.count("<span") >= 1
+
+
+def test_tokengraph_to_html_colors_the_object_marker_and_preposition():
+    # אֵת (the direct-object marker) now resolves to the verb's own verbal
+    # unit via its own 'object marker' relation, and so does the
+    # preposition בְּ via its own 'adverbial' relation -- both are
+    # tokentype "lexical", so both get wrapped in a (non-empty) color span,
+    # same as any other token belonging to that unit.
+    example, tokengraph = _tokengraph_for("genesis_1_1")
+    html_out = tokengraph_to_html(tokengraph)
+    et_marker = next(tok for tok in tokengraph if tok.relationship1 == "object marker")
+    preposition = next(tok for tok in tokengraph if tok.relationship1 == "adverbial")
+    assert f'>{et_marker.token}</span>' in html_out
+    assert f'>{preposition.token}</span>' in html_out
 
 
 def test_tokengraph_to_html_escapes_and_omits_implied_tokens():

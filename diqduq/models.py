@@ -21,6 +21,13 @@ conjunctions, and the relative pronoun אֲשֶׁר) that are not yet part of th
 scheme at all. Where syntax_model.md is silent, this module stays silent
 too rather than inventing an answer -- see "Extending the scheme" in
 USAGE.md for the intended workflow when a real passage needs one of these.
+
+syntax_model.md's own "TBA" section originally also listed the direct
+object marker אֵת and the functions of prepositions beyond "object of
+preposition" as not yet covered; both have since been added to the scheme
+(RelationLabel's "object marker" and "adverbial" values below) -- only
+subordinating conjunctions and the relative pronoun אֲשֶׁר remain listed as
+"TBA" as of this writing.
 """
 
 from typing import List, Literal, Optional
@@ -144,11 +151,11 @@ class VerbalExpression(BaseModel):
 # below), the one relation syntax_model.md documents this way.
 #
 # This is a considerably smaller set than arsgrammatica's mature Latin
-# RelationLabel: syntax_model.md itself says several things are "TBA"
-# (functions of prepositions beyond "object of preposition", subordinating
-# conjunctions, and the relative pronoun אֲשֶׁר) -- don't invent labels for
-# any of these. If a real passage needs one, extend syntax_model.md first,
-# then add the label here, following "Extending the scheme" in USAGE.md.
+# RelationLabel: syntax_model.md itself still says two things are "TBA"
+# (subordinating conjunctions and the relative pronoun אֲשֶׁר) -- don't
+# invent labels for either of these. If a real passage needs one, extend
+# syntax_model.md first, then add the label here, following "Extending the
+# scheme" in USAGE.md.
 #
 # - "unit verb": every INDEPENDENT verb's own relation1 is the special
 #   sentinel value 'root' (never an actual token id -- no real token may
@@ -168,6 +175,14 @@ class VerbalExpression(BaseModel):
 # - "direct object": a noun or pronoun functioning as the direct object of
 #   a verbal expression has relation1 -> the id of the verb, relationship1
 #   = 'direct object'.
+# - "object marker": the direct object marker אֵת itself has relation1 ->
+#   the id of the direct object it marks, relationship1 = 'object marker'.
+#   The marked noun keeps its OWN separate 'direct object' relation to the
+#   verb -- this is an additional entry on the marker token, not a
+#   replacement for that one. Example: in בְּרֵאשִׁית בָּרָא אֱלֹהִים אֵת הַשָּׁמַיִם
+#   וְאֵת הָאָרֶץ, the first אֵת has relation1 -> הַשָּׁמַיִם's own noun's id
+#   (שָּׁמַיִם), the second -> הָאָרֶץ's own noun's id (אָרֶץ), both relationship1
+#   'object marker'.
 # - "predicate": a noun or pronoun functioning as the predicate complement
 #   of a LINKING verb (including an elided-sum implied token) has relation1
 #   -> the id of that verb, relationship1 = 'predicate'.
@@ -219,17 +234,29 @@ class VerbalExpression(BaseModel):
 #   modifies, relationship1 = 'adjectival'. Example: in אֲחִיכֶם הַקָּטֹן,
 #   קָּטֹן (modifying אֲחִי) has relation1 -> אֲחִי's id, relationship1 =
 #   'adjectival'.
+# - "adverbial": when a prepositional phrase modifies a verb adverbially,
+#   the PREPOSITION ITSELF (not its object) has relation1 -> the id of the
+#   verb, relationship1 = 'adverbial'. The preposition's own object is
+#   still separately recorded as 'object of preposition', exactly as
+#   usual -- this is an additional relation on the preposition, on top of
+#   its object's own unaffected relation to it. Example: in בְּרֵאשִׁית בָּרָא
+#   אֱלֹהִים אֵת הַשָּׁמַיִם וְאֵת הָאָרֶץ, the preposition בְּ (of the adverbial
+#   phrase בְּרֵאשִׁית) has relation1 -> בָּרָא's id, relationship1 =
+#   'adverbial'; its own object רֵאשִׁית has relation1 -> בְּ's id,
+#   relationship1 = 'object of preposition', unchanged.
 RelationLabel = Literal[
     "unit verb",
     "direct quote",
     "subject",
     "direct object",
+    "object marker",
     "predicate",
     "coordinating conjunction",
     "object of preposition",
     "article",
     "construct",
     "adjectival",
+    "adverbial",
 ]
 
 

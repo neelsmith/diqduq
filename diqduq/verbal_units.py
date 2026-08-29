@@ -28,7 +28,13 @@ outer clause but belongs to the inner one" shape (most likely once
 subordinating conjunctions are added), add the same kind of reverse-index
 wrinkle arsgrammatica's verbal_units.py uses for its own "unit verb
 (dependent)" case.
-"""
+
+The two relations added since ("object marker": the direct object marker
+אֵת -> the noun it marks; "adverbial": a preposition -> the verb it
+modifies) both point straight at another token in the SAME clause -- the
+marked noun and the verb, respectively -- so plain forward-chasing
+resolves both correctly too, with no reverse-index wrinkle needed for
+either (see tests/test_verbal_units.py's genesis_1_1 coverage)."""
 
 from typing import Dict, List, Optional, Tuple
 

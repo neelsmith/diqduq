@@ -290,7 +290,7 @@ Any further notebooks analogous to `arsgrammatica`'s `syntaxer.py` / `latin_synt
 
 ## Extending the scheme
 
-`syntax_model.md` says the current relation set is partial (its own "TBA" section names several constructions not yet covered). To add a new relation:
+`syntax_model.md` says the current relation set is partial (its own "TBA" section names two constructions not yet covered: subordinating conjunctions and the relative pronoun אֲשֶׁר). To add a new relation:
 
 1. Add the new label to `RelationLabel` in `diqduq/models.py`.
 2. Describe when to use it in `SyntaxAnalysis`'s docstring in

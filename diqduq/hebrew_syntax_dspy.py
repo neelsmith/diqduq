@@ -18,9 +18,9 @@ analyze_passage() convenience wrapper.
 
 Modeled closely on arsgrammatica's latin_syntax_dspy.py, but syntax_model.md
 documents a considerably smaller, first-draft scheme for Biblical Hebrew:
-two verbal-expression syntactic types instead of five, ten relation labels
-instead of two dozen, and no dependent-clause/ablative-absolute/gerund
-machinery at all yet. Don't backport any of arsgrammatica's Latin-specific
+two verbal-expression syntactic types instead of five, twelve relation
+labels instead of two dozen, and no dependent-clause/ablative-absolute/
+gerund machinery at all yet. Don't backport any of arsgrammatica's Latin-specific
 categories here -- if a real passage needs something syntax_model.md
 doesn't document, extend syntax_model.md first (see USAGE.md's "Extending
 the scheme"), then this signature's docstring, then models.py.
@@ -93,6 +93,14 @@ class SyntaxAnalysis(dspy.Signature):
           relatedtoken1 -> בָּרָא's id, relationship1 = 'subject'; שָׁמַיִם and
           אָרֶץ each have relatedtoken1 -> בָּרָא's id, relationship1 = 'direct
           object'.
+        - object marker: the direct object marker אֵת itself has
+          relatedtoken1 -> the id of the direct object noun/pronoun it
+          marks, relationship1 = 'object marker'. The marked noun keeps its
+          OWN separate 'direct object' relation to the verb -- this is an
+          additional entry on the marker token, not a replacement for that
+          one. Example: in Genesis 1.1 (as above), the first אֵת has
+          relatedtoken1 -> שָׁמַיִם's id, the second אֵת has relatedtoken1 ->
+          אָרֶץ's id, both relationship1 'object marker'.
         - coordinating conjunction (single pair): when a coordinating
           conjunction (the proclitic וְ) joins exactly ONE pair of
           adjectives, nouns, prepositional phrases, or verbal expressions,
@@ -155,13 +163,23 @@ class SyntaxAnalysis(dspy.Signature):
           it modifies, relationship1 = 'adjectival'. Example: in אֲחִיכֶם
           הַקָּטֹן, קָּטֹן (modifying אֲחִי) has relatedtoken1 -> אֲחִי's id,
           relationship1 = 'adjectival'.
+        - adverbial: when a prepositional phrase modifies a verb
+          adverbially, the PREPOSITION ITSELF (not its object) has
+          relatedtoken1 -> the id of the verb, relationship1 = 'adverbial'.
+          The preposition's own object is still separately recorded as
+          'object of preposition', exactly as usual -- this is an
+          additional relation on the preposition, on top of its object's
+          own unaffected relation to it. Example: in בְּרֵאשִׁית בָּרָא אֱלֹהִים
+          אֵת הַשָּׁמַיִם וְאֵת הָאָרֶץ, the preposition בְּ (of the adverbial
+          phrase בְּרֵאשִׁית) has relatedtoken1 -> בָּרָא's id, relationship1 =
+          'adverbial'; its own object רֵאשִׁית has relatedtoken1 -> בְּ's id,
+          relationship1 = 'object of preposition', unchanged.
 
         Only assign relations described above. Leave relatedtoken/
         relationship fields unset for tokens with no relation of these
         kinds -- not every token will have one (syntax_model.md's own "TBA"
-        section names several constructions -- the functions of
-        prepositions beyond 'object of preposition', subordinating
-        conjunctions, and the relative pronoun אֲשֶׁר -- that have no
+        section names two remaining constructions -- subordinating
+        conjunctions and the relative pronoun אֲשֶׁר -- that have no
         documented relation at all yet; leave a token unrelated rather than
         guessing a label for one of these). Use only the token ids given in
         the input `tokens` list, the sentinel 'root', or a NEW id you

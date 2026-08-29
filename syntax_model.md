@@ -69,6 +69,10 @@ the  verbal unit anchored to יְהִ֣י is direct speech subordinate to יֹּ
 
 - noun or pronoun functioning as direct object of a verbal expression: *relation1* will be the id of the token of the verb. The value of *relationship1* will be *direct object*. In *Genesis* 1.1, each of the nouns שָּׁמַיִם and אָֽרֶץ will have the id of בָּרָא for `relation1` with *direct object* as the value of `relationship1`.
 
+- the direct object marker אֵת.  When a direct object is marked with the object marker אֵת, the id of the direct object will be `relation1` for אֵת, and `object marker` will be the value of `relationship1`. Example: in 
+בְּרֵאשִׁ֖ית בָּרָ֣א אֱלֹהִ֑ים אֵ֥ת הַשָּׁמַ֖יִם וְאֵ֥ת הָאָֽרֶץ׃ there are two direct objects, each marked with אֵת. The first אֵת will have the ID of
+שָּׁמַ֖יִם for `relation1`; the second אֵת will have the ID of אָֽרֶץ for `relation1`; both will have `object marker` for `relationship1`.
+
 - noun or pronoun functioning as the predicate of a linking verb: *relation1* will be the id of the token of the verb, with *predicate* as the value of `relationship1`.
 
 
@@ -97,12 +101,16 @@ there are two verbal expressions coordinated by וְ, namely וַיְבָ֤רֶ�
 - adjectives: adjectives take the ID of the noun they modify as `relation1` with `adjectival` as the value of  `relationship1`. Example: in the phrase אֲחִיכֶם הַקָּטֹן, the adjective קָּטֹן modifies the noun אֲחִי (which is followed by the possessive pronoun). קָּטֹן will have the ID of אֲחִי for `relation1` and `adjectival` as the value of `relationship1`.
  
 
- 
+
+
+-  prepositions: when prepositional phrases have an adverbial meaning, the preposition takes the ID of the verb as `relation1` with `adverbial` as the value of  `relationship1`. Example: in 
+בְּרֵאשִׁית בָּרָא אֱלֹהִים אֵת הַשָּׁמַיִם וְאֵת הָאָֽרֶץ, the prepositional phrase בְּרֵאשִׁית adds an adverbial qualification to the verb בָּרָא. The preposition בְּ will have the ID of בָּרָא for `relation1` and `adverbial` for `relationship1`.  The noun רֵאשִׁית will have the ID of בְּ for `relation1` with `object of preposition` for `relationship1`.
+
+
+
 
 ## TBA
 
-- direct object marker eth-
-- functions of prepositions
 - subordinating conjunctions: 
 - The relative pronoun אֲשֶׁ֥ר : 
 

@@ -24,13 +24,18 @@ def _tokengraph_for(slug_prefix):
 def test_genesis_1_1_every_token_resolves_to_the_one_verbal_unit_or_none():
     tokengraph = _tokengraph_for("genesis_1_1")
     assignment = assign_verbal_units(tokengraph)
-    # אֵת (the direct-object marker, twice) has no relation and resolves to
-    # None; every other lexical/proclitic token resolves to t2 (בָּרָא).
+    # Every substantive token in this one-clause sentence resolves to t2
+    # (בָּרָא), including the preposition בְּ (via its own 'adverbial'
+    # relation straight to the verb) and both instances of the direct-object
+    # marker אֵת (via their own 'object marker' relation to the noun each
+    # marks, which itself resolves to t2 as a 'direct object').
     assert assignment["t2"] == "t2"
+    assert assignment["t0"] == "t2"  # בְּ, adverbial (prepositional phrase)
     assert assignment["t3"] == "t2"  # אֱלֹהִים, subject
+    assert assignment["t4"] == "t2"  # אֵת, object marker -> t6
     assert assignment["t6"] == "t2"  # שָּׁמַיִם, direct object
+    assert assignment["t8"] == "t2"  # אֵת, object marker -> t10
     assert assignment["t10"] == "t2"  # אָרֶץ, direct object (via the article)
-    assert assignment["t4"] is None  # אֵת, unrelated
 
 
 def test_genesis_2_3_chained_conjunction_resolves_each_verb_to_itself():

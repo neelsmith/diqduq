@@ -57,33 +57,43 @@ class GoldExample:
 
 
 # ---------------------------------------------------------------------------
-# Genesis 1.1 -- root/unit verb, subject, direct object, single-pair
+# Genesis 1.1 -- root/unit verb, subject, direct object, object marker,
+# adverbial (prepositional phrase modifying the verb), single-pair
 # coordinating conjunction, article.
 # ---------------------------------------------------------------------------
 _GENESIS_1_1_ANSWER = {
     "reasoning": (
         "בָּרָא is the sentence's one finite verb, an independent clause "
         "(relatedtoken1='root', relationship1='unit verb'), transitive "
-        "active. אֱלֹהִים is its subject. אֵת (twice) is the untranslated "
-        "definite direct-object marker and carries no relation of its own "
-        "under the current scheme. הַשָּׁמַיִם and הָאָרֶץ are both objects "
-        "of בָּרָא; each noun's own article (הַ) relates back to it. The "
-        "single proclitic וְ before the second אֵת joins the two nouns "
-        "שָּׁמַיִם and אָרֶץ as a coordinating conjunction (using both "
-        "relatedtoken1/relatedtoken2 at once, per syntax_model.md)."
+        "active. The adverbial phrase בְּרֵאשִׁית ('in the beginning') "
+        "modifies בָּרָא: the preposition בְּ itself has relatedtoken1 -> "
+        "בָּרָא, relationship1='adverbial', while its own object רֵאשִׁית "
+        "keeps its ordinary 'object of preposition' relation to בְּ. "
+        "אֱלֹהִים is the subject of בָּרָא. אֵת (twice) is the untranslated "
+        "definite direct-object marker; each instance now carries its own "
+        "'object marker' relation pointing at the noun it marks (the first "
+        "אֵת -> שָּׁמַיִם, the second -> אָרֶץ), in addition to (not instead "
+        "of) that noun's own separate 'direct object' relation to בָּרָא. "
+        "הַשָּׁמַיִם and הָאָרֶץ are both objects of בָּרָא; each noun's own "
+        "article (הַ) relates back to it. The single proclitic וְ before "
+        "the second אֵת joins the two nouns שָּׁמַיִם and אָרֶץ as a "
+        "coordinating conjunction (using both relatedtoken1/relatedtoken2 "
+        "at once, per syntax_model.md)."
     ),
     "verbalunits": [
         {"id": "t2", "syntactic_type": "independent", "semantic_type": "transitive active"},
     ],
     "tokengraph": [
-        {"id": "t0", "token": "בְּ", "tokentype": "lexical", "lemma": "בְּ"},
+        {"id": "t0", "token": "בְּ", "tokentype": "lexical", "lemma": "בְּ",
+         "relatedtoken1": "t2", "relationship1": "adverbial"},
         {"id": "t1", "token": "רֵאשִׁ֖ית", "tokentype": "lexical", "lemma": "רֵאשִׁית",
          "relatedtoken1": "t0", "relationship1": "object of preposition"},
         {"id": "t2", "token": "בָּרָ֣א", "tokentype": "lexical", "lemma": "ברא",
          "verbalunitid": "t2", "relatedtoken1": "root", "relationship1": "unit verb"},
         {"id": "t3", "token": "אֱלֹהִ֑ים", "tokentype": "lexical", "lemma": "אֱלֹהִים",
          "relatedtoken1": "t2", "relationship1": "subject"},
-        {"id": "t4", "token": "אֵ֥ת", "tokentype": "lexical", "lemma": "אֵת"},
+        {"id": "t4", "token": "אֵ֥ת", "tokentype": "lexical", "lemma": "אֵת",
+         "relatedtoken1": "t6", "relationship1": "object marker"},
         {"id": "t5", "token": "הַ", "tokentype": "lexical", "lemma": "הַ",
          "relatedtoken1": "t6", "relationship1": "article"},
         {"id": "t6", "token": "שָּׁמַ֖יִם", "tokentype": "lexical", "lemma": "שָׁמַיִם",
@@ -91,7 +101,8 @@ _GENESIS_1_1_ANSWER = {
         {"id": "t7", "token": "וְ", "tokentype": "proclitic conjunction", "lemma": "וְ",
          "relatedtoken1": "t6", "relationship1": "coordinating conjunction",
          "relatedtoken2": "t10", "relationship2": "coordinating conjunction"},
-        {"id": "t8", "token": "אֵ֥ת", "tokentype": "lexical", "lemma": "אֵת"},
+        {"id": "t8", "token": "אֵ֥ת", "tokentype": "lexical", "lemma": "אֵת",
+         "relatedtoken1": "t10", "relationship1": "object marker"},
         {"id": "t9", "token": "הָ", "tokentype": "lexical", "lemma": "הַ",
          "relatedtoken1": "t10", "relationship1": "article"},
         {"id": "t10", "token": "אָֽרֶץ", "tokentype": "lexical", "lemma": "אֶרֶץ",
@@ -336,7 +347,8 @@ GOLD_EXAMPLES: List[GoldExample] = [
         slug="genesis_1_1_root_and_pairwise_conjunction",
         passage="בְּרֵאשִׁ֖ית בָּרָ֣א אֱלֹהִ֑ים אֵ֥ת הַשָּׁמַ֖יִם וְאֵ֥ת הָאָֽרֶץ׃",
         tags=["unit verb", "root", "subject", "direct object", "article",
-              "coordinating conjunction (single pair)", "object of preposition"],
+              "coordinating conjunction (single pair)", "object of preposition",
+              "object marker", "adverbial"],
         canned_answer=_GENESIS_1_1_ANSWER,
     ),
     GoldExample(
