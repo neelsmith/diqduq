@@ -1,6 +1,6 @@
 import marimo
 
-__generated_with = "0.21.1"
+__generated_with = "0.24.0"
 app = marimo.App()
 
 
@@ -78,6 +78,36 @@ def _(mo):
 def _(mo):
     uploaded_file = mo.ui.file(label="Choose a CTS text file")
     return (uploaded_file,)
+
+
+@app.cell
+def _(uploaded_file):
+    str_raw = uploaded_file.value[0].contents.decode()
+    return (str_raw,)
+
+
+@app.cell
+def _(str_raw):
+    lines = str_raw.split("\n")[2:]
+    return (lines,)
+
+
+@app.cell
+def _(lines):
+    u,t = lines[0].split("|")
+    return
+
+
+@app.cell
+def _(lines):
+    prs = [ln.split("|") for ln in lines]
+    return (prs,)
+
+
+@app.cell
+def _(prs):
+    prs
+    return
 
 
 @app.cell
