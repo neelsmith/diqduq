@@ -101,7 +101,8 @@ there are two verbal expressions coordinated by וְ, namely וַיְבָ֤רֶ�
 
 ## TBA
 
-- functoins of prepositions
+- direct object marker eth-
+- functions of prepositions
 - subordinating conjunctions: 
 - The relative pronoun אֲשֶׁ֥ר : 
 

@@ -27,26 +27,6 @@ def _env(name: str, fallback_name: str, default: "str | None" = None) -> "str | 
     return default
 
 
-#: Fallback `max_tokens` for the `dspy.LM` itself when `.env` doesn't set
-#: MAX_TOKENS -- see _configure_lm()'s own comment for why this exists at
-#: all: leaving it unset (dspy.LM's own default) is `None`, and dspy's
-#: truncation warning ("LM response was truncated due to exceeding
-#: max_tokens=...") always reports the LM's OWN baseline value here, not
-#: whatever value a per-call `config={"max_tokens": ...}` override (as
-#: analyze_with_retry()/segment_with_retry() always use) actually sent to
-#: the provider -- so an uncalibrated `None` baseline shows up in that
-#: warning even when the real, per-call budget was a sensible number and
-#: the retry machinery worked exactly as designed. This is purely a display
-#: fix for that misleading text, not a substitute for token_budget.py's
-#: real per-call estimates: the retry wrappers' own budget still always
-#: wins for any call that goes through them (dspy.LM merges kwargs as
-#: `{**self.kwargs, **per_call_kwargs}`, so a per-call override always
-#: takes precedence over this baseline) -- this only matters as a floor
-#: for a call that bypasses them entirely (a user's own direct analyze()/
-#: segment() call, or the reflection LM in optimize_gepa.py).
-_DEFAULT_MAX_TOKENS = 4096
-
-
 def _configure_lm():
     api_base = _env("API_BASE", "API_BASE", None)
     model = _env("MODEL", "MODEL", None)
@@ -70,22 +50,33 @@ def _configure_lm():
         )
     api_key = os.environ["API_KEY"]
 
-    # MAX_TOKENS is optional: falls back to _DEFAULT_MAX_TOKENS (see its own
-    # comment above) rather than leaving dspy.LM's own max_tokens at None.
-    # Set this in .env to your model's real max output tokens if you know
-    # it -- see USAGE.md's "Estimating and enforcing a max_tokens budget".
+    # MAX_TOKENS is optional and, deliberately, has NO default injected here
+    # (an earlier version of this function set one -- see git history/
+    # DEVELOPMENT.md if curious -- but that only swapped dspy's own
+    # "LM response was truncated due to exceeding max_tokens=None" warning
+    # for an equally-inaccurate "...max_tokens=4096", since dspy's
+    # `_check_truncation()` always reports the LM's OWN baseline kwargs,
+    # never the real per-call value analyze_with_retry()/segment_with_retry()
+    # actually sent (see token_budget.py's module docstring). A confident-
+    # looking wrong number is worse than an obviously-wrong one, so this
+    # reverts to leaving max_tokens unset unless you explicitly set it --
+    # see USAGE.md's "Estimating and enforcing a max_tokens budget" for why
+    # that raw dspy warning line can't be trusted either way, and what to
+    # look at instead (this codebase's own UserWarnings, which do carry the
+    # real numbers).
     max_tokens_setting = _env("MAX_TOKENS", "MAX_TOKENS", None)
-    max_tokens = int(max_tokens_setting) if max_tokens_setting else _DEFAULT_MAX_TOKENS
 
-    # Only pass api_key through when it's actually non-empty. dspy.LM/litellm
-    # don't need one at all for a local Ollama daemon -- passing api_key=""
-    # explicitly is unnecessary and, depending on the provider, can behave
-    # differently than omitting it outright.
-    lm_kwargs = dict(model=model, max_tokens=max_tokens)
+    # Only pass api_key/max_tokens through when they're actually set.
+    # dspy.LM/litellm don't need an api_key at all for a local Ollama daemon
+    # -- passing api_key="" explicitly is unnecessary and, depending on the
+    # provider, can behave differently than omitting it outright.
+    lm_kwargs = dict(model=model)
     if api_base:
         lm_kwargs["api_base"] = api_base
     if api_key:
         lm_kwargs["api_key"] = api_key
+    if max_tokens_setting:
+        lm_kwargs["max_tokens"] = int(max_tokens_setting)
 
     lm = dspy.LM(**lm_kwargs)
     dspy.configure(lm=lm)

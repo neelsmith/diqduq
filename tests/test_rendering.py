@@ -63,6 +63,21 @@ def test_tokengraph_to_html_escapes_and_omits_implied_tokens():
     assert "None" not in html_out
 
 
+def test_tokengraph_to_html_include_cantillation_defaults_true():
+    example, tokengraph = _tokengraph_for("genesis_1_1")
+    assert any(tok.tokentype == "cantillation" for tok in tokengraph)
+    html_out = tokengraph_to_html(tokengraph)
+    assert "׃" in html_out
+
+
+def test_tokengraph_to_html_can_omit_cantillation():
+    example, tokengraph = _tokengraph_for("genesis_1_1")
+    html_out = tokengraph_to_html(tokengraph, include_cantillation=False)
+    assert "׃" not in html_out
+    # Everything else is still there -- only the cantillation mark is gone.
+    assert "בָּרָ֣א" in html_out
+
+
 def test_tokengraph_to_depth_html_negative_depth_raises():
     example, tokengraph = _tokengraph_for("genesis_1_1")
     try:

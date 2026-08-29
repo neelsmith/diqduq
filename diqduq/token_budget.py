@@ -307,10 +307,16 @@ def analyze_with_retry(
 # whitespace between tokens). If real usage shows this proxy is a poor fit,
 # the right long-term fix is a calibration script analogous to
 # calibrate_max_tokens.py's, fit specifically against character count
-# instead of token count -- flagged here as a known simplification, not
-# implemented because segmentation-stage truncation wasn't an observed
-# problem until this module was extended to cover it at all.
-_SEGMENTATION_FALLBACK_INTERCEPT = 500.0
+# instead of token count -- flagged here as a known simplification.
+#
+# _SEGMENTATION_FALLBACK_INTERCEPT started at 500.0 and proved too low in
+# real use: a real ~60-character passage needed more than 1652 completion
+# tokens (826 initial estimate, doubled once) before segmentation actually
+# succeeded, meaning the `reasoning` field's own free-text length dominates
+# for short passages far more than a 500-token baseline assumed. Raised to
+# 2000.0 -- still a guess, not a real fit, but a guess grounded in an actual
+# observed shortfall rather than an arbitrary starting point.
+_SEGMENTATION_FALLBACK_INTERCEPT = 2000.0
 _SEGMENTATION_FALLBACK_CHARS_PER_COMPLETION_TOKEN = 1.5
 
 DEFAULT_SEGMENTATION_SAFETY_MARGIN = 1.4
@@ -374,7 +380,7 @@ def _segmentation_undercoverage(sources: List[CitedText], sentences: List[Senten
 def segment_with_retry(
     sources: List[CitedText],
     *,
-    max_retries: int = 1,
+    max_retries: int = 3,
     growth_factor: float = 2.0,
     safety_margin: float = DEFAULT_SEGMENTATION_SAFETY_MARGIN,
     floor: int = DEFAULT_SEGMENTATION_FLOOR,
@@ -386,6 +392,16 @@ def segment_with_retry(
     or silently returning an incomplete result -- the segmentation-stage
     counterpart to `analyze_with_retry()` above (see this module's own
     docstring for why segmentation needed this at all).
+
+    `max_retries` defaults higher here than `analyze_with_retry()`'s `1`
+    (three doublings from a truncated initial estimate reaches roughly
+    8x that estimate before giving up) specifically because
+    estimate_segmentation_max_tokens()'s budget is an uncalibrated
+    character-count proxy, not a real fit the way estimate_max_tokens()'s
+    is once calibrate_max_tokens.py has been run -- a rough guess deserves
+    more retry headroom to self-correct, cheaply, rather than giving up
+    after one doubling the way a properly-calibrated estimate can afford
+    to.
 
     The starting budget is `initial_max_tokens` if given, else
     `estimate_segmentation_max_tokens(sources, safety_margin=safety_margin,

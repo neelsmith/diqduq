@@ -44,7 +44,7 @@ import dspy
 # Reuse diqduq_main.py's own .env-loading + LM-config helpers rather than
 # duplicating them.
 sys.path.insert(0, str(Path(__file__).parent))
-from diqduq_main import _configure_lm, _env, _DEFAULT_MAX_TOKENS  # noqa: E402
+from diqduq_main import _configure_lm, _env  # noqa: E402
 
 # tests/ isn't an installed package -- add it to sys.path the same way
 # pytest does (see pytest.ini's own comment about this) so
@@ -99,19 +99,19 @@ def _configure_reflection_lm(task_lm):
         raise RuntimeError(
             "Missing API key for the reflection LM. Set REFLECTION_API_KEY or API_KEY in .env."
         )
-    # REFLECTION_MAX_TOKENS, falling back to MAX_TOKENS, falling back to
-    # _DEFAULT_MAX_TOKENS -- same reasoning as diqduq_main._configure_lm()'s
-    # own MAX_TOKENS handling: leaving dspy.LM's own max_tokens at None
-    # produces a misleadingly-labeled truncation warning later even when a
-    # per-call budget override was actually used (see that function's
-    # comment for the full explanation).
+    # REFLECTION_MAX_TOKENS, falling back to MAX_TOKENS -- optional, no
+    # default injected (see diqduq_main._configure_lm()'s own comment on
+    # MAX_TOKENS for why: dspy's truncation warning can't be made accurate
+    # by setting a baseline here either way, so there's no real upside to
+    # guessing one).
     max_tokens_setting = _env("REFLECTION_MAX_TOKENS", "REFLECTION_MAX_TOKENS", None) or _env(
         "MAX_TOKENS", "MAX_TOKENS", None
     )
-    max_tokens = int(max_tokens_setting) if max_tokens_setting else _DEFAULT_MAX_TOKENS
-    lm_kwargs = dict(model=reflection_model, api_key=api_key, max_tokens=max_tokens)
+    lm_kwargs = dict(model=reflection_model, api_key=api_key)
     if api_base:
         lm_kwargs["api_base"] = api_base
+    if max_tokens_setting:
+        lm_kwargs["max_tokens"] = int(max_tokens_setting)
     return dspy.LM(**lm_kwargs)
 
 

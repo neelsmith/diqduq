@@ -39,13 +39,13 @@ API_KEY=
 
 `diqduq_main.py` only raises "Missing API key" when `API_KEY` isn't in `.env` at all; an empty value is treated as "this model doesn't need one" and is left out of the LM call entirely, rather than sent through as an empty credential.
 
-Optionally set `MAX_TOKENS` too:
+Optionally set `MAX_TOKENS` too, if you know your model's real max output tokens:
 
 ```
 MAX_TOKENS=4096
 ```
 
-This sets the baseline `max_tokens` on the `dspy.LM` itself (`_configure_lm()` defaults to `4096` if you don't set it). It does **not** replace `token_budget.py`'s per-call estimates -- `analyze_with_retry()`/`segment_with_retry()` always override it with their own calibrated budget for the calls that matter (a per-call `config={"max_tokens": ...}` always wins over the LM's own baseline). What it fixes is cosmetic but confusing: dspy's own truncation warning ("`LM response was truncated due to exceeding max_tokens=...`") always reports the LM's *baseline* value, never the actual per-call value a retry used -- so leaving this at dspy's own default of `None` makes that warning say `max_tokens=None` even while the retry system is working exactly as designed underneath it (see USAGE.md's "Estimating and enforcing a `max_tokens` budget" below for how to tell the two apart). Set `MAX_TOKENS` to your model's real max output tokens if you know it, so this baseline -- and that warning -- reflect something meaningful.
+Leave it unset unless you have a specific reason to set it -- see the note on `MAX_TOKENS` under "Estimating and enforcing a `max_tokens` budget" below for why setting it doesn't do what it might look like it does, and isn't needed for ordinary use.
 
 
 ## Using `diqduq` in a script
@@ -184,11 +184,12 @@ from diqduq import estimate_max_tokens
 budget = estimate_max_tokens(num_tokens=25)  # -> an int max_tokens value
 ```
 
-**Two different symptoms, two different fixes:**
+**A `dspy.clients.lm` warning that says `max_tokens=None` (or any other fixed number) is not reporting the real per-call budget, and setting `MAX_TOKENS` doesn't fix that.** dspy's own truncation-warning text (`_check_truncation()` in `dspy/clients/lm.py`) always reports the `dspy.LM` instance's *baseline* `max_tokens` -- whatever it was constructed with -- never the actual per-call value `analyze_with_retry()`/`segment_with_retry()` computed and sent for that specific attempt (the per-call `config={"max_tokens": ...}` override does correctly win for the real request; it just isn't what this one warning prints). An earlier version of this doc suggested setting `MAX_TOKENS` to make that warning "say something meaningful" -- don't: it only replaces one fixed, wrong-looking number (`None`) with a different fixed, equally-wrong-but-more-plausible-looking one (whatever you set `MAX_TOKENS` to), which is worse, not better, since a plausible number invites trusting it. There's no way to make this particular dspy warning line trustworthy from here; **ignore its number entirely** and look instead at this codebase's own `UserWarning`s (e.g. "retrying with a larger max_tokens=...", "still looks truncated after N retry(ies) (max_tokens=...)"), which always carry the real per-call number, or call `dspy.inspect_history()` for the actual request.
 
-- A warning that names an actual `max_tokens=<some number>` (e.g. `max_tokens=1024`) means a real call *was* budgeted, but the estimate was too small for that particular passage. `calibrate_max_tokens.py` (above) is the right fix -- it improves the *estimate* the budget is drawn from.
-- A warning that says **`max_tokens=None`** is misleading, not necessarily broken: dspy's own truncation-warning text (`dspy.clients.lm`'s `_check_truncation()`) always reports the `dspy.LM` instance's *baseline* `max_tokens` -- the value it was constructed with -- never the actual per-call value a retry used, even when `analyze_with_retry()`/`segment_with_retry()` correctly computed and sent a real, sensible budget for that specific attempt (dspy's own per-call `config={"max_tokens": ...}` override always wins for the actual request; it just isn't what gets printed in this one warning). `diqduq_main.py`'s `_configure_lm()` sets that baseline explicitly (`MAX_TOKENS` in `.env`, defaulting to `4096` -- see "Running an analysis from the command line" above) specifically so this warning stops saying `None`, but the text still won't reflect the real per-call number during a retry -- that's a dspy display quirk outside this codebase's control. If you see this warning working its way up through increasingly large numbers across successive attempts and then succeeding, that's `analyze_with_retry()`/`segment_with_retry()` doing exactly what they're designed to do (look for their own `UserWarning`s -- e.g. "retrying with a larger max_tokens=..." -- for the numbers that actually matter); calibrate (above) if it's landing on a larger budget than it should need to.
-- Separately, a hard *error* from your provider (rather than a warning) -- something like "tokens exceeded allowed length" as a rejection, not a truncated response -- means the *requested* `max_tokens` itself exceeded what your model actually allows, almost always because `token_budget.py`'s `DEFAULT_CEILING` (`8192`) is bigger than your configured `MODEL`'s real max-output-tokens limit. Neither `calibrate_max_tokens.py` nor the retry wrappers can fix that by themselves (they only ever ask for *less* than `ceiling`, never more); pass your model's real limit explicitly as `ceiling=`:
+**Two different real symptoms, two different real fixes:**
+
+- One of *this codebase's own* `UserWarning`s names an actual `max_tokens=<some number>` and the analysis/segmentation still succeeds after retrying -- this is `analyze_with_retry()`/`segment_with_retry()` working as designed. If it's landing on a larger budget than it feels like it should need, `calibrate_max_tokens.py` (above) is the fix for the analysis stage; segmentation has no calibration script yet (see its own note below) so widening its own fallback constants in `token_budget.py` is the equivalent move there.
+- A hard *error* from your provider (rather than a warning) -- something like "tokens exceeded allowed length" as a rejection, not a truncated response -- means the *requested* `max_tokens` itself exceeded what your model actually allows, almost always because `token_budget.py`'s `DEFAULT_CEILING` (`8192`) is bigger than your configured `MODEL`'s real max-output-tokens limit. Neither `calibrate_max_tokens.py` nor the retry wrappers can fix that by themselves (they only ever ask for *less* than `ceiling`, never more); pass your model's real limit explicitly as `ceiling=`:
 
 ```python
 from diqduq import analyze_with_retry
@@ -218,7 +219,9 @@ from diqduq import segment_with_retry
 sentences = segment_with_retry(sources)  # sources: List[CitedText]
 ```
 
-This exists specifically because `segmentation_dspy.segment()` on its own passes no `config={"max_tokens": ...}` at all, so a `dspy.LM` configured without an explicit `max_tokens` (as `diqduq_main.py`'s `_configure_lm()` does -- see "Running an analysis from the command line" above) falls straight through to the provider's own default, which can be small enough to truncate a longer passage's segmentation -- exactly the `max_tokens=None` symptom described above. `estimate_segmentation_max_tokens()` picks a budget from the combined input *character* count of `sources` (there's no per-token count to fit against before segmentation has run), using a deliberately generous, uncalibrated proxy rather than a real measured fit -- see `token_budget.py`'s "Segmentation budget" section for why. `pipeline.py`'s `analyze_sources()`/`analyze_passage()` already call `segment_with_retry()` rather than `segmentation_dspy.segment_sources()` directly, so this is automatic for ordinary use; call `segment_with_retry()` yourself only if you're driving the segmentation stage in isolation.
+This exists specifically because `segmentation_dspy.segment()` on its own passes no `config={"max_tokens": ...}` at all, so a `dspy.LM` configured without an explicit `max_tokens` falls straight through to the provider's own default, which can be small enough to truncate a longer passage's segmentation. `estimate_segmentation_max_tokens()` picks a budget from the combined input *character* count of `sources` (there's no per-token count to fit against before segmentation has run), using a deliberately generous, uncalibrated proxy rather than a real measured fit -- see `token_budget.py`'s "Segmentation budget" section for why. `pipeline.py`'s `analyze_sources()`/`analyze_passage()` already call `segment_with_retry()` rather than `segmentation_dspy.segment_sources()` directly, so this is automatic for ordinary use; call `segment_with_retry()` yourself only if you're driving the segmentation stage in isolation.
+
+Because that proxy is a guess, not a fit, `segment_with_retry()` defaults `max_retries` to `3` (vs. `analyze_with_retry()`'s `1`) -- more retry headroom to compensate for a starting estimate with no real calibration behind it. In real testing, a short (~60-character) passage needed more than 1652 completion tokens (an 826 initial estimate, doubled once) before segmentation actually succeeded -- evidence that the `reasoning` field's own length dominates far more than input length for short passages. `_SEGMENTATION_FALLBACK_INTERCEPT` in `token_budget.py` was raised from `500.0` to `2000.0` in response to that observation; if segmentation still exhausts its retries on your own real passages, that constant (or `max_retries`/`growth_factor`, passed explicitly to `segment_with_retry()`) is the next thing to widen -- there's no calibration script for this stage yet to do it more precisely (see `token_budget.py`'s own comment on why: segmentation has no natural per-input-token count to fit against the way `SyntaxAnalysis` does).
 
 `get_calibration()` reports which fit is currently active (a real one from a calibration script, or the untuned fallback) if you want to check before relying on an estimate.
 
@@ -249,7 +252,16 @@ print(format_gold_example_source(example, "_SOME_NEW_CONSTRUCTION_ANSWER"))
 
 ## `marimo` notebooks
 
-`marimo/` currently holds one existing notebook, `cts_text_menu.py` (a CTS file browser), predating this package build. No new marimo notebooks for `diqduq`'s own analysis pipeline have been implemented yet -- that directory is a placeholder for future interactive notebooks analogous to `arsgrammatica`'s `syntaxer.py` / `latin_syntaxer_workflow.py` / `latin_syntaxer_ctsdata.py` / `latin_syntaxer_review.py` (see that project's own USAGE.md for what each of those does), once one is wanted for `diqduq`.
+`marimo/` holds `cts_text_menu.py` (a CTS file browser, predating this package build) and `hebrew_syntaxer_workflow.py`, modeled on `arsgrammatica`'s `latin_syntaxer_workflow.py`:
+
+```bash
+marimo edit marimo/hebrew_syntaxer_workflow.py   # interactive
+marimo run marimo/hebrew_syntaxer_workflow.py    # read-only app view
+```
+
+Needs the same `.env` as `diqduq_main.py` (`API_BASE`/`MODEL`/`API_KEY`) -- it reuses `diqduq_main._configure_lm()` rather than duplicating its own LM setup. Enter a base URN (context), a passage reference, and the Hebrew text to analyze, then submit the form; the notebook runs `analyze_passage()` and displays the result several ways: a Mermaid diagram of the `tokengraph` (via `tokengraph_to_mermaid()`), plain reconstructed text (`tokengraph_to_text()`), an HTML reading view highlighted by verbal unit with cantillation marks dropped (`tokengraph_to_html(..., include_cantillation=False)`), and the same highlighting indented by depth of subordination (`tokengraph_to_depth_html()`). It also shows the dspy reasoning trace, optional token/cost/prompt inspection, and lets you download the analysis (as `.cex` or `.txt`, via `serialize_analyses()`) or the Mermaid diagram source.
+
+Any further notebooks analogous to `arsgrammatica`'s `syntaxer.py` / `latin_syntaxer_ctsdata.py` / `latin_syntaxer_review.py` (see that project's own USAGE.md for what each of those does) remain unimplemented for now.
 
 
 ## Files
@@ -272,7 +284,7 @@ print(format_gold_example_source(example, "_SOME_NEW_CONSTRUCTION_ANSWER"))
 - `optimize_gepa.py` — GEPA optimization pipeline for `SyntaxAnalysis`'s prompt (see OPTIMIZING.md).
 - `tests/` — a pytest suite covering models, segmentation, analysis, validation, and coverage of the scheme's relation/type vocabulary (see TESTING.md).
 - `docs/build_api_docs.py` — regenerates `docs/diqduq-api-docs.html`, a single self-contained HTML page documenting every name in `diqduq.__all__`, built with `pdoc` straight from the package's own docstrings and type hints. Run `python docs/build_api_docs.py` after changing a public docstring or signature to refresh it; requires `pdoc` (`pip install pdoc --break-system-packages`).
-- `marimo/` — placeholder for future interactive notebooks (see "`marimo` notebooks" above); currently holds only the pre-existing `cts_text_menu.py`.
+- `marimo/` — interactive notebooks (see "`marimo` notebooks" above): the pre-existing `cts_text_menu.py`, plus `hebrew_syntaxer_workflow.py` for interactively analyzing a passage and viewing/downloading the result.
 - `syntax_model.md` — the authoritative description of the analytic scheme itself: verbal-expression categories, tokenization rules, and syntactic relations.
 
 

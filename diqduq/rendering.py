@@ -168,7 +168,7 @@ def tokengraph_to_text(tokengraph: List[TokenAnalysis]) -> str:
     return "".join(pieces)
 
 
-def tokengraph_to_html(tokengraph: List[TokenAnalysis]) -> str:
+def tokengraph_to_html(tokengraph: List[TokenAnalysis], *, include_cantillation: bool = True) -> str:
     """Render `tokengraph` as an HTML string: the same continuous text
     `tokengraph_to_text()` produces -- identical spacing rules -- except
     every **lexical** token, and every **proclitic conjunction** carrying a
@@ -186,12 +186,25 @@ def tokengraph_to_html(tokengraph: List[TokenAnalysis]) -> str:
     coordinates (see that module's docstring). Leaving it unwrapped would
     visually hide that assignment even though it's a real one.
 
-    Every other non-lexical, non-conjunction token -- cantillation,
-    paragraph, editorial, maqaf, and a non-conjunction enclitic pronoun --
-    is still emitted as plain (escaped) text even though
-    `assign_verbal_units()` assigns every token to whichever unit its
-    relations resolve to; this function just doesn't turn that assignment
-    into a span for anything else.
+    Every other non-lexical, non-conjunction token -- paragraph, editorial,
+    maqaf, and a non-conjunction enclitic pronoun -- is still emitted as
+    plain (escaped) text even though `assign_verbal_units()` assigns every
+    token to whichever unit its relations resolve to; this function just
+    doesn't turn that assignment into a span for anything else.
+
+    `include_cantillation` (default `True`, matching arsgrammatica's own
+    tokengraph_to_html(), which has no equivalent exclusion) controls
+    whether cantillation tokens (te'amim -- e.g. the verse-final sof pasuq
+    ׃) are rendered at all. Pass `include_cantillation=False` to omit them
+    from the output entirely -- not just leave them uncolored, the way the
+    other non-lexical tokentypes above are -- for a reading view that
+    foregrounds the lexical/relational content without the accent marks
+    interspersed. This is a deliberate Hebrew-specific divergence from
+    arsgrammatica: Latin punctuation is sparse enough to leave visible by
+    default, but cantillation is dense enough (in principle -- most marks
+    stay embedded in a lexical token's own niqqud under this project's
+    fixtures; see gold_examples.py's own note on that simplification) that
+    a caller may want it gone rather than merely unhighlighted.
 
     An **implied/elided token** (models.py's IMPLIED_TOKENTYPES) is omitted
     entirely -- same as tokengraph_to_text() -- rather than rendered with
@@ -205,13 +218,15 @@ def tokengraph_to_html(tokengraph: List[TokenAnalysis]) -> str:
     """
     assignment = assign_verbal_units(tokengraph)
     colors, _warnings = assign_verbal_unit_colors(tokengraph, assignment=assignment)
-    return _tokens_to_html(tokengraph, assignment, colors)
+    return _tokens_to_html(tokengraph, assignment, colors, include_cantillation=include_cantillation)
 
 
 def _tokens_to_html(
     tokens: List[TokenAnalysis],
     assignment: Dict[str, Optional[str]],
     colors: Dict[str, Tuple[str, str, str]],
+    *,
+    include_cantillation: bool = True,
 ) -> str:
     """Shared rendering core behind tokengraph_to_html() and
     tokengraph_to_depth_html(): join `tokens` into one HTML string with the
@@ -221,13 +236,25 @@ def _tokens_to_html(
     these as parameters (rather than deriving them from `tokens` itself) is
     what lets tokengraph_to_depth_html() render one depth-block's tokens at
     a time while every block still uses the exact same unit-to-color
-    mapping as the whole passage."""
+    mapping as the whole passage.
+
+    `include_cantillation=False` drops cantillation tokens from the output
+    entirely, exactly like an implied/elided token -- see
+    tokengraph_to_html()'s own docstring for why. tokengraph_to_depth_html()
+    doesn't expose this itself (it always passes the default, `True`) since
+    dropping a cantillation token there could otherwise leave a subordination
+    block's rendering looking identical to an adjacent one with a different
+    depth; nothing currently stops a future caller from passing it through
+    if that turns out to be wanted too.
+    """
     preposition_ids = _preposition_ids(tokens)
     pieces: List[str] = []
     previous_class = None
 
     for tok in tokens:
         if tok.tokentype in IMPLIED_TOKENTYPES:
+            continue
+        if not include_cantillation and tok.tokentype == "cantillation":
             continue
         cls = _classify(tok, preposition_ids)
         rendered = html.escape(tok.token)
