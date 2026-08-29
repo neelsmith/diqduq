@@ -2,3 +2,13 @@ scratch/
 .DS_Store
 __marimo__/
 __pycache__/
+.env
+.venv/
+gepa_logs/
+build/
+dist/
+*.egg-info/
+# Written by calibrate_max_tokens.py; specific to whatever MODEL your own
+# .env points at, so it doesn't belong in version control -- re-run the
+# script after cloning rather than committing its output.
+diqduq/token_budget_calibration.json

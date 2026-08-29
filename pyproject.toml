@@ -1,0 +1,41 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "diqduq"
+version = "0.1.0"
+description = "A DSPy-based analyzer of Biblical Hebrew syntax, using an alternative scheme designed for research and teaching."
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.10"
+authors = [
+    { name = "Neel Smith", email = "nsmith@holycross.edu" },
+]
+dependencies = [
+    "dspy>=3.0",
+    "pydantic>=2.0",
+    "python-dotenv>=1.0",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+    "Programming Language :: Python :: 3",
+    "Topic :: Text Processing :: Linguistic",
+]
+
+[project.optional-dependencies]
+# `pip install -e ".[test]"` -- just enough to run `pytest` (TESTING.md).
+test = ["pytest>=7.0"]
+# `pip install -e ".[dev]"` -- test tooling plus `pdoc`, for
+# docs/build_api_docs.py (USAGE.md's "Files" section).
+dev = ["pytest>=7.0", "pdoc>=14.0"]
+
+[project.urls]
+Homepage = "https://github.com/neelsmith/diqduq"
+Repository = "https://github.com/neelsmith/diqduq"
+Issues = "https://github.com/neelsmith/diqduq/issues"
+
+[tool.setuptools.packages.find]
+include = ["diqduq*"]
