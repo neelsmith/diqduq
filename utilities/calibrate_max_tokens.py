@@ -24,11 +24,11 @@ least squares. The fitted (intercept, slope) is written to
 diqduq/token_budget_calibration.json, where token_budget.estimate_max_tokens()
 picks it up automatically.
 
-Usage:
+Usage (from the repo root):
 
-    python3 calibrate_max_tokens.py
+    python3 utilities/calibrate_max_tokens.py
 
-Needs the same .env diqduq_main.py uses (see USAGE.md's "Running an
+Needs the same .env diqduq_main.py uses (see notes/USAGE.md's "Running an
 analysis from the command line"):
 
     API_BASE=https://localmodel/api
@@ -62,6 +62,11 @@ project's own convention for judgment calls, not a bug: diqduq has far
 fewer runnable scripts than arsgrammatica, so there's no equivalent of
 model_bakeoff.py's several near-identical _configure_*_lm() variants to
 justify each script owning its own copy.
+
+This script lives in utilities/, one directory below the repo root (where
+diqduq_main.py, tests/, and the installed `diqduq` package itself all
+live) -- see the sys.path handling just below for how it still reaches
+diqduq_main.py and tests/conftest.py from there.
 """
 
 import argparse
@@ -70,10 +75,17 @@ import json
 import sys
 from pathlib import Path
 
+# This script lives in utilities/, one directory below the repo root --
+# _REPO_ROOT is that root, used below to reach diqduq_main.py and tests/,
+# neither of which is part of the installed `diqduq` package itself (which
+# resolves from anywhere via the normal import system, unaffected by this
+# script's own location).
+_REPO_ROOT = Path(__file__).resolve().parent.parent
+
 # Reuse diqduq_main.py's own .env-loading + LM-config helpers -- see this
 # file's own docstring for why this diverges from arsgrammatica's
 # duplicate-per-script convention.
-sys.path.insert(0, str(Path(__file__).parent))
+sys.path.insert(0, str(_REPO_ROOT))
 from diqduq_main import _configure_lm  # noqa: E402
 
 # tests/ isn't an installed package -- add it to sys.path the same way
@@ -81,13 +93,17 @@ from diqduq_main import _configure_lm  # noqa: E402
 # "from fixtures.gold_examples import GOLD_EXAMPLES" and
 # "from conftest import tokens_from_canned_answer" resolve the same way
 # they do under pytest, without duplicating either helper here.
-sys.path.insert(0, str(Path(__file__).parent / "tests"))
+sys.path.insert(0, str(_REPO_ROOT / "tests"))
 from conftest import tokens_from_canned_answer  # noqa: E402
 from fixtures.gold_examples import GOLD_EXAMPLES  # noqa: E402
 
 from diqduq import analyze
-
-CALIBRATION_FILE = Path(__file__).parent / "diqduq" / "token_budget_calibration.json"
+# CALIBRATION_FILE is imported (not re-derived from this script's own
+# __file__) so there is exactly one place that decides where the
+# calibration file lives -- diqduq/token_budget.py's own
+# `Path(__file__).with_name(...)`, which is already self-anchored to the
+# installed `diqduq` package and so is unaffected by this script's move.
+from diqduq.token_budget import CALIBRATION_FILE
 
 
 def _fit_line(xs, ys):
@@ -123,7 +139,7 @@ def main():
              "should comfortably exceed anything GOLD_EXAMPLES needs; raise it if "
              "examples are still getting skipped as truncated even at the default, "
              "or LOWER it if your provider rejects a request this large outright "
-             "(see this script's module docstring, and USAGE.md's note on "
+             "(see this script's module docstring, and notes/USAGE.md's note on "
              "DEFAULT_CEILING, for why a too-large max_tokens can itself be the "
              "cause of a 'tokens exceeded allowed length' error rather than the fix).",
     )
@@ -216,7 +232,7 @@ def main():
         "    from diqduq import analyze_with_retry\n"
         "    analyze_with_retry(passage, tokens, ceiling=4096)  # your model's real limit\n"
         "-- token_budget.py's DEFAULT_CEILING (8192) is only a placeholder stand-in "
-        "(see USAGE.md's 'Estimating and enforcing a max_tokens budget')."
+        "(see notes/USAGE.md's 'Estimating and enforcing a max_tokens budget')."
     )
 
 

@@ -21,7 +21,7 @@ noun (matching gold_examples.py's own choice, for internal consistency,
 and because the relation examples are the more load-bearing half of the
 scheme) -- but this is a genuine first-draft inconsistency in
 syntax_model.md worth resolving explicitly rather than silently, per
-DEVELOPMENT.md's own convention. The examples below are chosen to avoid
+notes/DEVELOPMENT.md's own convention. The examples below are chosen to avoid
 מִכָּל itself, sidestepping the ambiguity rather than resolving it by
 example.
 """

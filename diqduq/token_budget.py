@@ -25,10 +25,10 @@ analysis stage:
 
 1. `estimate_max_tokens()` picks a per-call budget from a simple linear
    model (`completion_tokens ~= intercept + slope * num_input_tokens`),
-   with a safety margin on top. Until `calibrate_max_tokens.py` (repo root)
+   with a safety margin on top. Until `calibrate_max_tokens.py` (utilities/)
    has been run against your own configured model, this falls back to a
    conservative, deliberately-generous untuned fit (`_FALLBACK_INTERCEPT`/
-   `_FALLBACK_SLOPE` below) -- see `_load_calibration()`, and USAGE.md's
+   `_FALLBACK_SLOPE` below) -- see `_load_calibration()`, and notes/USAGE.md's
    "Estimating and enforcing a `max_tokens` budget".
 2. `analyze_with_retry()` wraps `analyze()` and, if a call still comes back
    truncated despite that estimate, retries with a larger budget rather
@@ -40,7 +40,7 @@ below -- can protect against a *provider* rejecting a request outright for
 requesting more `max_tokens` than that model actually allows (a "tokens
 exceeded allowed length"-type error, as opposed to a truncated response);
 that failure mode is about `ceiling` being set too high for your specific
-model, not about the estimate being wrong. See USAGE.md's note on
+model, not about the estimate being wrong. See notes/USAGE.md's note on
 `DEFAULT_CEILING` for that case -- pass a smaller `ceiling=` explicitly if
 your model's real limit is below the default.
 """
@@ -295,7 +295,7 @@ def analyze_with_retry(
 
 # Deliberately generous, deliberately UNCALIBRATED constants for the
 # segmentation stage -- unlike SyntaxAnalysis's own fit, there is no
-# calibrate_max_tokens.py-style script measuring these against a real model
+# utilities/calibrate_max_tokens.py-style script measuring these against a real model
 # yet, because segmentation's output (a List[Sentence], each with its own
 # List[Token]) doesn't have a natural "num_input_tokens" to fit against the
 # way SyntaxAnalysis's tokengraph does -- segmentation is what PRODUCES
@@ -306,7 +306,7 @@ def analyze_with_retry(
 # token's own surface text, an implied/paragraph/cantillation entry, or is
 # whitespace between tokens). If real usage shows this proxy is a poor fit,
 # the right long-term fix is a calibration script analogous to
-# calibrate_max_tokens.py's, fit specifically against character count
+# utilities/calibrate_max_tokens.py's, fit specifically against character count
 # instead of token count -- flagged here as a known simplification.
 #
 # _SEGMENTATION_FALLBACK_INTERCEPT started at 500.0 and proved too low in
@@ -398,7 +398,7 @@ def segment_with_retry(
     8x that estimate before giving up) specifically because
     estimate_segmentation_max_tokens()'s budget is an uncalibrated
     character-count proxy, not a real fit the way estimate_max_tokens()'s
-    is once calibrate_max_tokens.py has been run -- a rough guess deserves
+    is once utilities/calibrate_max_tokens.py has been run -- a rough guess deserves
     more retry headroom to self-correct, cheaply, rather than giving up
     after one doubling the way a properly-calibrated estimate can afford
     to.

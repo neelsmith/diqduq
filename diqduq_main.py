@@ -34,7 +34,7 @@ def _configure_lm():
     if model is None:
         raise RuntimeError(
             "Missing MODEL. Set MODEL in your .env file, e.g. "
-            "MODEL=litellm/anthropic/claude-opus-5 -- see USAGE.md."
+            "MODEL=litellm/anthropic/claude-opus-5 -- see notes/USAGE.md."
         )
 
     # Distinguish "API_KEY isn't in .env at all" (a likely oversight -- keep
@@ -52,7 +52,7 @@ def _configure_lm():
 
     # MAX_TOKENS is optional and, deliberately, has NO default injected here
     # (an earlier version of this function set one -- see git history/
-    # DEVELOPMENT.md if curious -- but that only swapped dspy's own
+    # notes/DEVELOPMENT.md if curious -- but that only swapped dspy's own
     # "LM response was truncated due to exceeding max_tokens=None" warning
     # for an equally-inaccurate "...max_tokens=4096", since dspy's
     # `_check_truncation()` always reports the LM's OWN baseline kwargs,
@@ -60,7 +60,7 @@ def _configure_lm():
     # actually sent (see token_budget.py's module docstring). A confident-
     # looking wrong number is worse than an obviously-wrong one, so this
     # reverts to leaving max_tokens unset unless you explicitly set it --
-    # see USAGE.md's "Estimating and enforcing a max_tokens budget" for why
+    # see notes/USAGE.md's "Estimating and enforcing a max_tokens budget" for why
     # that raw dspy warning line can't be trusted either way, and what to
     # look at instead (this codebase's own UserWarnings, which do carry the
     # real numbers).

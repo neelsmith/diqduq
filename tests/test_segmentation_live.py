@@ -1,6 +1,6 @@
 """
 A live-LM smoke test for segmentation_dspy.py -- skipped by default (see
-TESTING.md); run with `pytest -m live` once a real .env is configured.
+notes/TESTING.md); run with `pytest -m live` once a real .env is configured.
 Modeled on arsgrammatica's test_segmentation_live.py.
 """
 

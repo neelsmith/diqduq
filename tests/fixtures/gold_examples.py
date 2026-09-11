@@ -6,7 +6,7 @@ tests/fixtures/gold_examples.py, but far smaller: every entry here is drawn
 straight from one of syntax_model.md's own worked examples, rather than
 from a broad, independently-curated corpus -- fitting for a first-draft
 scheme that is still being written alongside this test suite (see
-DEVELOPMENT.md).
+notes/DEVELOPMENT.md).
 
 Running these through DummyLM (see conftest.py's run_gold_example()) proves
 the CODE (models.py's pydantic models, hebrew_syntax_dspy.validate(),
@@ -28,7 +28,7 @@ niqqud and any cantillation marks embedded exactly as they appear in the
 source (e.g. "בָּרָ֣א"), and only the standalone *sof pasuq* (׃) at a
 verse's end gets its own separate `tokentype="cantillation"` entry. This is
 a deliberate simplification, flagged here per this project's own
-DEVELOPMENT.md convention of flagging judgment calls rather than silently
+notes/DEVELOPMENT.md convention of flagging judgment calls rather than silently
 picking one.
 
 A second note: inseparable prepositions (בְּ/כְּ/לְ) and the article (הַ)

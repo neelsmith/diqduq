@@ -22,7 +22,7 @@ two verbal-expression syntactic types instead of five, twelve relation
 labels instead of two dozen, and no dependent-clause/ablative-absolute/
 gerund machinery at all yet. Don't backport any of arsgrammatica's Latin-specific
 categories here -- if a real passage needs something syntax_model.md
-doesn't document, extend syntax_model.md first (see USAGE.md's "Extending
+doesn't document, extend syntax_model.md first (see notes/USAGE.md's "Extending
 the scheme"), then this signature's docstring, then models.py.
 
 Run this file directly for a quick smoke test against the configured LM:

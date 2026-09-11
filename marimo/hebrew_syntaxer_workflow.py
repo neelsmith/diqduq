@@ -428,7 +428,7 @@ def _(configure_lm, dspy):
     # Avoid reconfiguring the LM (and re-reading .env) on every reactive
     # re-run of this cell -- configure_lm() (diqduq_main._configure_lm())
     # raises with a clear message if MODEL/API_KEY aren't set in .env; see
-    # USAGE.md's "Running an analysis from the command line".
+    # notes/USAGE.md's "Running an analysis from the command line".
     lm = dspy.settings.lm if dspy.settings.lm is not None else configure_lm()
     return (lm,)
 

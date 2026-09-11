@@ -1,0 +1,30 @@
+[
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "diqduq",
+    "section": "",
+    "text": "A python package leveraging LLMs with dspy to analyze the syntax of passages of Biblical Hebrew.\ndiqduq offers an alternative analytic scheme to Universal Dependencies, designed to describe Hebrew syntax in familiar terms that are convenient for research and teaching. Released under the GNU General Public License v3 or later."
+  },
+  {
+    "objectID": "index.html#status",
+    "href": "index.html#status",
+    "title": "diqduq",
+    "section": "Status",
+    "text": "Status\nIn planning phases only. First beta release projected for late 2026."
+  },
+  {
+    "objectID": "index.html#work-in-progress",
+    "href": "index.html#work-in-progress",
+    "title": "diqduq",
+    "section": "Work in progress",
+    "text": "Work in progress\nAPI docs"
+  },
+  {
+    "objectID": "index.html#related-work",
+    "href": "index.html#related-work",
+    "title": "diqduq",
+    "section": "Related work",
+    "text": "Related work\nUniversal models for cross-lingual syntactic alignment:\n\nudsyntax : get Universal Dependency data from spaCy into a simple syntax graph format\naat : Agent-Action-Target model, a reductive model of natural-language syntax\n\nLanguage-specific models for detailed syntactic analysis:\n\narsgrammatica: a parallel Python package for analyzing passages of Latin with\ngrammatike: a parallel Python package for analyzing passages of ancient Greek with LMs LMs"
+  }
+]

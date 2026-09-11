@@ -5,7 +5,7 @@ diqduq/gepa_metric.py's syntax_metric as the scoring/feedback function.
 Modeled directly on arsgrammatica's optimize_gepa.py.
 
 This is a LIVE-LM script: unlike the pytest suite (entirely DummyLM-backed,
-see TESTING.md), every trial here actually calls the configured task LM,
+see notes/TESTING.md), every trial here actually calls the configured task LM,
 plus a reflection LM GEPA uses to read the metric's feedback and propose
 better instructions. Budget is controlled by --auto (dspy's light/medium/
 heavy presets -- default "light", the cheapest) or --max-metric-calls for
@@ -21,11 +21,11 @@ examples it's being judged on -- expect the result to fit these sentences
 well without a guarantee it generalizes to new ones. Revisit this once
 there are enough gold examples to hold some out.
 
-Usage:
-    python optimize_gepa.py                       # --auto light (default)
-    python optimize_gepa.py --auto medium
-    python optimize_gepa.py --max-metric-calls 40
-    python optimize_gepa.py --skip-baseline        # skip the pre-GEPA scoring pass
+Usage (from the repo root):
+    python utilities/optimize_gepa.py                       # --auto light (default)
+    python utilities/optimize_gepa.py --auto medium
+    python utilities/optimize_gepa.py --max-metric-calls 40
+    python utilities/optimize_gepa.py --skip-baseline        # skip the pre-GEPA scoring pass
 
 Needs the same .env as diqduq_main.py (API_BASE/MODEL/API_KEY). Optionally
 set REFLECTION_MODEL (and REFLECTION_API_BASE/REFLECTION_API_KEY, if they
@@ -33,6 +33,10 @@ differ) to use a different model for GEPA's own reflective step -- GEPA's
 docs recommend a strong reasoning model specifically for reflection.
 Without REFLECTION_MODEL set, the task model doubles as the reflection
 model, which is a reasonable default for a first run but not a requirement.
+
+This script lives in utilities/, one directory below the repo root (where
+diqduq_main.py, tests/, and gepa_logs/ all live) -- see the sys.path
+handling and `log_dir` just below for how it still reaches those from here.
 """
 
 import argparse
@@ -41,9 +45,16 @@ from pathlib import Path
 
 import dspy
 
+# This script lives in utilities/, one directory below the repo root --
+# _REPO_ROOT is that root, used below to reach diqduq_main.py, tests/, and
+# gepa_logs/, none of which is part of the installed `diqduq` package
+# itself (which resolves from anywhere via the normal import system,
+# unaffected by this script's own location).
+_REPO_ROOT = Path(__file__).resolve().parent.parent
+
 # Reuse diqduq_main.py's own .env-loading + LM-config helpers rather than
 # duplicating them.
-sys.path.insert(0, str(Path(__file__).parent))
+sys.path.insert(0, str(_REPO_ROOT))
 from diqduq_main import _configure_lm, _env  # noqa: E402
 
 # tests/ isn't an installed package -- add it to sys.path the same way
@@ -51,7 +62,7 @@ from diqduq_main import _configure_lm, _env  # noqa: E402
 # "from fixtures.gold_examples import GOLD_EXAMPLES" and
 # "from conftest import tokens_from_canned_answer" resolve the same way
 # they do under pytest, without duplicating either helper here.
-sys.path.insert(0, str(Path(__file__).parent / "tests"))
+sys.path.insert(0, str(_REPO_ROOT / "tests"))
 from conftest import tokens_from_canned_answer  # noqa: E402
 from fixtures.gold_examples import GOLD_EXAMPLES  # noqa: E402
 
@@ -145,7 +156,10 @@ def main():
     parser.add_argument(
         "--out",
         default="optimized_syntax_analysis.json",
-        help="Where to save the optimized program (default: %(default)s).",
+        help="Where to save the optimized program (default: %(default)s, "
+             "relative to the current directory -- run this script from "
+             "the repo root, or pass an absolute/explicit path, to control "
+             "where it lands).",
     )
     parser.add_argument(
         "--skip-baseline",
@@ -172,7 +186,7 @@ def main():
         metric=syntax_metric,
         reflection_lm=reflection_lm,
         track_stats=True,
-        log_dir=str(Path(__file__).parent / "gepa_logs"),
+        log_dir=str(_REPO_ROOT / "gepa_logs"),
     )
     if args.max_metric_calls is not None:
         optimizer_kwargs["max_metric_calls"] = args.max_metric_calls
@@ -193,7 +207,7 @@ def main():
         "To use it, right after `from diqduq.hebrew_syntax_dspy import analyze`, call:\n"
         f"    analyze.load({args.out!r})\n"
         "before running analyze_passage()/analyze_sources() -- see "
-        "OPTIMIZING.md."
+        "notes/OPTIMIZING.md."
     )
 
 

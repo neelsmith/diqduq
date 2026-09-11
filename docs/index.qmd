@@ -11,6 +11,10 @@ A python package leveraging LLMs with dspy to analyze the syntax of passages of 
 In planning phases only. First beta release projected for late 2026.
 
 
+## Work in progress
+
+[API docs](./diqduq-api-docs.html)
+
 ## Related work
 
 Universal models for cross-lingual syntactic alignment:

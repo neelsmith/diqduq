@@ -20,7 +20,7 @@ functions of prepositions beyond "object of preposition", subordinating
 conjunctions, and the relative pronoun אֲשֶׁר) that are not yet part of the
 scheme at all. Where syntax_model.md is silent, this module stays silent
 too rather than inventing an answer -- see "Extending the scheme" in
-USAGE.md for the intended workflow when a real passage needs one of these.
+notes/USAGE.md for the intended workflow when a real passage needs one of these.
 
 syntax_model.md's own "TBA" section originally also listed the direct
 object marker אֵת and the functions of prepositions beyond "object of
@@ -111,7 +111,7 @@ class VerbalExpression(BaseModel):
     Extend syntax_model.md first if a real passage needs a genuinely
     different category for a participial clause (e.g. something
     circumstantial/subordinate, as arsgrammatica's Latin scheme has for a
-    circumstantial participle) -- see USAGE.md's "Extending the scheme".
+    circumstantial participle) -- see notes/USAGE.md's "Extending the scheme".
 
     `diqduq` also recognizes one construction as understood or implied
     even though it has no surface realization: an elided present of "to
@@ -155,7 +155,7 @@ class VerbalExpression(BaseModel):
 # (subordinating conjunctions and the relative pronoun אֲשֶׁר) -- don't
 # invent labels for either of these. If a real passage needs one, extend
 # syntax_model.md first, then add the label here, following "Extending the
-# scheme" in USAGE.md.
+# scheme" in notes/USAGE.md.
 #
 # - "unit verb": every INDEPENDENT verb's own relation1 is the special
 #   sentinel value 'root' (never an actual token id -- no real token may
