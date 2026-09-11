@@ -6,32 +6,25 @@ It offers an alternative analytic scheme, designed to describe Biblical Hebrew s
 
 Released under the [GNU General Public License v3 or later](LICENSE).
 
+## Status
 
-## Installing
+Planning stages only. Beta release expected in late 2026.
 
-To use `diqduq` from another project, install it straight from this repository (no PyPI account or release process needed):
+## Work in progress
 
-```sh
-pip install git+https://github.com/neelsmith/diqduq.git
-```
-
-That installs whatever's currently on the `main` branch. Pin to a specific branch, tag, or commit by appending `@<ref>`, e.g. `pip install git+https://github.com/neelsmith/diqduq.git@wip` for a development branch, or `@v0.1.0` once a version is tagged. Either way, only `diqduq/` itself is installed as a package -- `dspy`, `pydantic`, and `python-dotenv` come along automatically as declared dependencies; the marimo notebooks, tests, and other repo scripts are not part of the installed package and aren't needed to use it.
-
-Working on `diqduq` itself (this repo checked out locally) rather than depending on it from elsewhere: `pip install -e .` from the repo root installs it in editable mode, so source edits take effect immediately without reinstalling.
+- Project [issue tracker](https://github.com/neelsmith/arsgrammatica/issues)
+- [Documentation](https://neelsmith.github.io/diqduq)
 
 
-## Using `diqduq`
+## Related work
 
-- [USAGE.md](USAGE.md)
-- [TESTING.md](TESTING.md)
-- [OPTIMIZING.md](OPTIMIZING.md)
-- [DEVELOPMENT.md](DEVELOPMENT.md) -- how the above fit together into one development loop
-- [API documentation](docs/diqduq-api-docs.html)
+Parallel python packages for language-specific syntactic analysis:
 
-See the [project issue tracker](https://github.com/neelsmith/diqduq/issues) for known gaps and work in progress -- in particular, `syntax_model.md` itself notes two remaining constructions ("TBA": subordinating conjunctions and the relative pronoun אֲשֶׁר) that the scheme doesn't cover yet.
+- [asgrammatica](https://github.com/neelsmith/asgrammatica) for Latin
+- [grammatike](https://github.com/neelsmith/grammatike) for Ancient Greek
 
 
-## Background
+Packages for working with universal syntax models:
 
-- [`arsgrammatica`](https://github.com/neelsmith/arsgrammatica), the same author's DSPy-based analyzer for Latin syntax, which this project mirrors closely in architecture.
-- Some initial work from 2023 on [an alternative to universal dependencies](https://neelsmith.github.io/GreekAndLatinSyntax/).
+- [udsyntax](https://github.com/neelsmith/udsyntax), a Python package to get dependency data from spaCy into a simple syntax graph format
+- [aat](https://github.com/neelsmith/aat), a Python package implementing a reduced model of natural-language syntax, Agent-Action-Target
