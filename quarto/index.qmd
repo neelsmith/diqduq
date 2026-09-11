@@ -4,7 +4,7 @@ title: diqduq
 
 A python package leveraging LLMs with dspy to analyze the syntax of passages of Biblical Hebrew.
 
-`diqduq` offers an alternative analytic scheme to [Universal Dependencies](https://universaldependencies.org), designed to describe Hebrew syntax in familiar terms that are convenient for research and teaching. Released under the GNU General Public License v3 or later.
+`diqduq` offers an alternative analytic scheme to [Universal Dependencies](https://universaldependencies.org), designed to describe Hebrew syntax in familiar terms that are convenient for research and teaching. Released under the [GNU General Public License v3](https://github.com/neelsmith/diqduq/blob/main/LICENSE) or later.
 
 ## Status
 
