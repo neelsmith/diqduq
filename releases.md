@@ -1,3 +1,3 @@
 # Release history
 
-No public releases yet.
+Work is still in planning phases only: no public releases yet.

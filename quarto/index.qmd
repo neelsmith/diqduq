@@ -1,0 +1,25 @@
+---
+title: diqduq
+---
+
+A python package leveraging LLMs with dspy to analyze the syntax of passages of Biblical Hebrew.
+
+`diqduq` offers an alternative analytic scheme to [Universal Dependencies](https://universaldependencies.org), designed to describe Hebrew syntax in familiar terms that are convenient for research and teaching. Released under the GNU General Public License v3 or later.
+
+## Status
+
+In planning phases only. First beta release projected for late 2026.
+
+
+## Related work
+
+Universal models for cross-lingual syntactic alignment:
+
+- [udsyntax](https://github.com/neelsmith/udsyntax) : get Universal Dependency data from spaCy into a simple syntax graph format
+- [aat](https://github.com/neelsmith/aat) : Agent-Action-Target model, a reductive model of natural-language syntax
+
+Language-specific models for detailed syntactic analysis:
+
+- [arsgrammatica](https://github.com/neelsmith/arsgrammatica): a parallel Python package for analyzing passages of Latin with 
+- [grammatike](grammatike): a parallel Python package for analyzing passages of ancient Greek with LMs
+LMs

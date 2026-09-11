@@ -1,0 +1,39 @@
+project:
+  type: website
+  output-dir: quarto-build
+
+version: "unreleased"  
+  
+
+website:
+  title: "diqduq"
+  page-footer:
+    center: "Documentation for release version **{{< meta version >}}**"
+
+  navbar:
+    left:
+      - href: index.qmd
+        text: Home
+
+            
+    right:   
+      - icon: github
+        menu:
+          - text: "diqduq on github"
+            href: https://github.com/neelsmith/diqduq
+          - text: "About me"
+            href: https://neelsmith.github.io
+          - text: "Other projects"
+            href: https://neelsmith.github.io/projects  
+
+
+format:
+  html:
+    theme:
+      - cosmo
+      - brand
+    css: styles.css
+    toc: true
+
+
+
